@@ -1,0 +1,30 @@
+-- Drops the table if it exists to ensure a clean slate for table creation
+Drop Table IF EXISTS ProductionShiftData;
+-- This table stores shift data for production analysis
+CREATE TABLE ProductionShiftData(
+    id SERIAL PRIMARY KEY, -- Unique identifier for each record
+    shift_index INT, -- Shift index for the production data
+    day_index INT, -- Day index for the shift
+    ShiftStart VARCHAR(20), -- Shift start time
+    ShiftEnd VARCHAR(20), -- Shift end time
+    Shift Operator VARCHAR(12), -- Operator for the shift
+    
+    ShiftDowntimeMinutes NUMERIC, -- Shift Downtime in minutes
+    ShiftDowntimePercentage NUMERIC, --Shift Downtime percentage
+    ShiftRuntimeTotalMinutes NUMERIC, --Shift Runtime in minutes
+    ShiftRuntimeAvg NUMERIC, --Shift Runtime minutes
+    ShiftTotalCycles INT, --Total cycles ran
+    ShiftTotalPassed INT, --Total cycles passed
+    ShiftTotalFailed INT, --Total cycles failed
+    ShiftBottleTotal INT, -- Total bottles produced
+    ShiftBottlesPerCycle NUMERIC, -- Bottles per cycle average
+    ShiftCycleTimeAvg NUMERIC, -- Average cycle time in minutes
+    ShiftTenOz INT, -- 10 oz bottles produced
+    ShiftFifteenOz INT, -- 15 oz bottles produced
+    ShiftFiftyOneOz INT, -- 51 oz bottles produced
+    ShiftDownedCount INT, -- Total bottles downed
+
+
+    ShiftTimeStamp VARCHAR(20), -- Shift timestamp
+    ShiftID INT NOT NULL -- Shift ID
+);
