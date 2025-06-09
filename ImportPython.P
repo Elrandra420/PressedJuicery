@@ -1,5 +1,5 @@
-from pycomm3 import LogixDriver
 import psycopg2
+from pycomm3 import LogixDriver
 from datetime import datetime, timedelta
 
 # PLC IP address and slot number

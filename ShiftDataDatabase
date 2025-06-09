@@ -7,7 +7,7 @@ CREATE TABLE ProductionShiftData(
     DayIndex INT, -- Day index for the shift
     ShiftStart VARCHAR(20), -- Shift start time
     ShiftEnd VARCHAR(20), -- Shift end time
-    Shift Operator VARCHAR(12), -- Operator for the shift
+    ShiftOperator VARCHAR(12), -- Operator for the shift
     
     ShiftDowntimeMinutes NUMERIC, -- Shift Downtime in minutes
     ShiftDowntimePercentage NUMERIC, --Shift Downtime percentage
@@ -23,6 +23,6 @@ CREATE TABLE ProductionShiftData(
     ShiftFifteenOz INT, -- 15 oz bottles produced
     ShiftFiftyOneOz INT, -- 51 oz bottles produced
     ShiftDownedCount INT, -- Total bottles downed
-    ShiftTimeStamp VARCHAR(20), -- Shift timestamp
+    ShiftTimeStamp TIMESTAMP, -- Shift timestamp
     ShiftID INT NOT NULL -- Shift ID
 );

@@ -1,8 +1,11 @@
+-- Drops the table if it exists to ensure a clean slate for table creation
+Drop Table IF EXISTS shift_textlog;
+-- This table stores shift data for production analysis
 CREATE TABLE shift_textlog (
     id SERIAL PRIMARY KEY, -- Unique identifier for each record
-    shift_id INT REFERENCES shift_log(id) ON DELETE CASCADE, -- Foreign key to shift_log table
+    shift_id INT REFERENCES productionshiftdata(id) ON DELETE CASCADE, -- Foreign key to shift_log table
     log_type TEXT, -- 'maintenance' or 'process'
     log_index INT, -- Index of the log entry
     log_entry TEXT, -- Text entry for the log
-    log_tstamp TIMESTAMP, -- Timestamp of the log entry
+    log_tstamp TIMESTAMP -- Timestamp of the log entry
 )
