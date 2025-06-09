@@ -3,8 +3,8 @@ Drop Table IF EXISTS ProductionShiftData;
 -- This table stores shift data for production analysis
 CREATE TABLE ProductionShiftData(
     id SERIAL PRIMARY KEY, -- Unique identifier for each record
-    shift_index INT, -- Shift index for the production data
-    day_index INT, -- Day index for the shift
+    ShiftIndex INT, -- Shift index for the production data
+    DayIndex INT, -- Day index for the shift
     ShiftStart VARCHAR(20), -- Shift start time
     ShiftEnd VARCHAR(20), -- Shift end time
     Shift Operator VARCHAR(12), -- Operator for the shift
@@ -23,8 +23,6 @@ CREATE TABLE ProductionShiftData(
     ShiftFifteenOz INT, -- 15 oz bottles produced
     ShiftFiftyOneOz INT, -- 51 oz bottles produced
     ShiftDownedCount INT, -- Total bottles downed
-
-
     ShiftTimeStamp VARCHAR(20), -- Shift timestamp
     ShiftID INT NOT NULL -- Shift ID
 );

@@ -1,5 +1,6 @@
 from pycomm3 import LogixDriver
 import psycopg2
+from datetime import datetime, timedelta
 
 # PLC IP address and slot number
 PLC_IP = '192.168.25.186/11' 
@@ -13,8 +14,7 @@ DB_PARAMS = {
     'port': '5432'
 }
 
-# Tags to read from the PLC and its corresponding database names
-# Adjust the tags according to the PLC configuration 'tag_name':'database_name' format
+# Tags to read: 'tag_name':'database_name'
 tags_to_read = {
     'DT_Min':'ShiftDowntimeMinutes',
     'Shift_DTP':'ShiftDowntimePercent',
@@ -37,6 +37,13 @@ tags_to_read = {
     'ShiftTStamp':'ShiftTimeStamp'
 } # This is a dictionary
 
+DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] # List of days based on 0 = Monday, 6 = Sunday
+
+def get_shift_data(day_index):
+    today = datetime.now()
+    start_of_week = today - timedelta(days=today.weekday())  # Get the start of the week (Monday)
+    return (start_of_week + timedelta(days=day_index)).date()
+
 # Iterate through the tags and read data from the PLC
 def read_shiftdata():
     data = [] # Tuple holds (shift_index, day_index, value)
@@ -48,13 +55,13 @@ def read_shiftdata():
                     for plc_tag, db_field in tags_to_read.items():
                         tag_name = f'ShiftData[{i},{j}].{plc_tag}'
                         result = plc.read(tag_name)
-                    if result and result.value is not None:
-                        row[db_field] = result.value
-                    else:
-                        error_message = result.error if result else "Unknown error"
-                        print(f"Failed to read {tag_name} at shift index {i} and day index {j}. Error: {error_message}")
+                        if result and result.value is not None:
+                            row[db_field] = result.value
+                        else:
+                            error_message = result.error if result else "Unknown error"
+                            print(f"Failed to read {tag_name} at shift index {i} and day index {j}. Error: {error_message}")
     except Exception as e:
-        print(f"An error occurred while reading data from PLC: {e}")
+        print(f"Error reading data from PLC: {e}")
     return data
 
 def insert_data_into_postgres(shift_data):
@@ -62,27 +69,31 @@ def insert_data_into_postgres(shift_data):
         print("No data to inserted.")
         return
     
-    conn = psycopg2.connect(**DB_PARAMS)
-    cursor = conn.cursor()
+    try:
+        
+        conn = psycopg2.connect(**DB_PARAMS)
+        cursor = conn.cursor()
 
-    for row in shift_data:
-        shift = row.pop('ShiftIndex')
-        day = row.pop('DayIndex')
+        for row in shift_data:
+            shift = row.pop('ShiftIndex')
+            day = row.pop('DayIndex')
 
-        columns = ['shift_index', 'day_index'] + list(row.keys())
-        values = [shift, day] + list(row.values())
+            columns = ['ShiftIndex', 'DayIndex'] + list(row.keys())
+            values = [shift, day] + list(row.values())
 
-        placeholders = ', '.join(['%s'] * len(values))
-        columns = ', '.join(columns)
+            placeholders = ', '.join(['%s'] * len(values))
+            columns = ', '.join(columns)
 
-        # Prepare the SQL insert statement
-        sql = f"INSERT INTO shift_data ({columns}) VALUES ({placeholders})"
-        cursor.execute(sql, values)
+            # Prepare the SQL insert statement
+            sql = f"INSERT INTO shift_data ({columns}) VALUES ({placeholders})"
+            cursor.execute(sql, values)
 
-    conn.commit()
-    cursor.close()
-    conn.close()
-    # print("Data inserted successfully into PostgreSQL database.")
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("Data inserted successfully into PostgreSQL database.")
+    except Exception as e:
+        print(f"Error inserting data: {e}")
 
     if __name__ == "__main__":
         shift_data = read_shiftdata()
