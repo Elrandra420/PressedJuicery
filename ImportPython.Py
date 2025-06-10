@@ -37,7 +37,7 @@ tags_to_read = {
     'ShiftTStamp':'ShiftTimeStamp'
 } # This is a dictionary
 
-DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] # List of days based on 0 = Monday, 6 = Sunday
+#DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] # List of days based on 0 = Monday, 6 = Sunday
 
 def get_shift_data(day_index):
     today = datetime.now()
@@ -46,7 +46,11 @@ def get_shift_data(day_index):
 
 # Iterate through the tags and read data from the PLC
 def read_shiftdata():
-    data = [] # Tuple holds (shift_index, day_index, value)
+    data = {
+        'ShiftIndex': [],
+        'DayIndex': [],
+        'DateRecorded': datetime.now()
+    } # Tuple holds (shift_index, day_index, value)
     try:
         with LogixDriver(PLC_IP) as plc:
             for i in range(2): # Assuming 2 shifts
