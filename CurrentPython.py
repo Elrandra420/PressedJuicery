@@ -1,3 +1,5 @@
+# Elijah Andrade
+# This script reads production shift data and text logs from a PLC and inserts them into a PostgreSQL database.
 import psycopg2
 from pycomm3 import LogixDriver
 from datetime import datetime, timedelta
@@ -77,8 +79,8 @@ def read_text_logs(shift, day):
 # This function determines the current shift and day index based on the current time. For use with scheduled tasks.
 def get_current_shift_and_day():
     now = datetime.now()
-    shift = 1 # if now.hour < 18 else 1  # Shifts change at 6am and 6pm
-    day_index = 0 #now.weekday()  # 0 = Monday, 6 = Sunday
+    shift = 0  if now.hour < 18 else 1  # Shifts change at 6am and 6pm
+    day_index = now.weekday()  # 0 = Monday, 6 = Sunday
     return shift, day_index
 
 def read_current_shift():
