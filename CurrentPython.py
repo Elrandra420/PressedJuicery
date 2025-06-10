@@ -3,6 +3,7 @@
 import psycopg2
 from pycomm3 import LogixDriver
 from datetime import datetime, timedelta
+# psycopg2 is a PostgreSQL adapter for Python, and pycomm3 is used to communicate with Allen-Bradley PLCs.
 
 # PLC IP address and slot number
 PLC_IP = '192.168.25.186/11'
@@ -14,7 +15,7 @@ DB_PARAMS = {
     'password': 'Controls',
     'host': 'localhost',
     'port': '5432'
-}
+} # This dictionary holds the connection parameters for the PostgreSQL database.
 
 # Tags to read: 'tag_name':'database_name'
 tags_to_read = {
@@ -36,17 +37,23 @@ tags_to_read = {
     'ShiftEnd':'ShiftEnd',
     'Operator':'ShiftOperator',
     'ShiftTStamp':'ShiftTimeStamp'
-} # This is a dictionary
+} # This is a dictionary that maps PLC tags to database fields. Each key is a tag name in the PLC, and each value is the corresponding field name in the PostgreSQL database.
 
 #DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] # List of days based on 0 = Monday, 6 = Sunday
+# I eventually want to use this to get the day names, but for now I will just use the day index.
 
+# This function reads the shift text logs
 def read_text_logs(shift, day):
     log_entries = []
     try:
         with LogixDriver(PLC_IP) as plc:
             shift_time_tag = f'ShiftData[{shift},{day}].ShiftTStamp'
             shift_time_result = plc.read(shift_time_tag)
-            shift_time = shift_time_result.value if shift_time_result else None
+            if shift_time_result and shift_time_result.error is None:
+                shift_time = shift_time_result.value
+            else:
+                shift_time = None
+                print(f"Failed to read tag {shift_time_tag}: {shift_time_result.error if shift_time_result else 'Unknown Error'}")
             
             for i in range(30):
                 tag = f'ShiftData_Log[{shift}, {day}].Maintenance[{i}]'
@@ -61,7 +68,7 @@ def read_text_logs(shift, day):
                         'ShiftTimeStamp': shift_time
                     })
             for i in range(20):
-                tag = f'ShiftData_Log[{shift},{day}].Process[{i}]'
+                tag = f'ShiftData_Log[{shift}, {day}].Process[{i}]'
                 result = plc.read(tag)
                 if result and result.value:
                     log_entries.append({
@@ -73,18 +80,32 @@ def read_text_logs(shift, day):
                         'ShiftTimeStamp': shift_time
                     })
     except Exception as e:
-        print(f"Error reading ShiftData_Logs from PLC: {e}")
+        print(f"Error reading ShiftData_Logs from PLC for shift {shift}, day {day}: {e}")
     return log_entries
 
 # This function determines the current shift and day index based on the current time. For use with scheduled tasks.
+# Set to save the previous shifts data
 def get_current_shift_and_day():
     now = datetime.now()
-    shift = 0  if now.hour < 18 else 1  # Shifts change at 6am and 6pm
-    day_index = now.weekday()  # 0 = Monday, 6 = Sunday
+    if now.hour >= 18 and now.hour < 6:  # Night shift from 6pm to 6am
+        shift = 0
+        if now.hour < 12:
+            day_index = now.weekday()  # 0 = Monday, 6 = Sunday
+        else:
+            day_index = now.weekday() - 1
+            if day_index < 0:  # If it's Monday, set to Sunday
+                day_index = 6
+        
+    elif now.hour >= 6 and now.hour < 18:  # Day shift from 6am to 6pm
+        shift = 1
+        day_index = now.weekday() - 1
+        if day_index < 0:  # If it's Monday, set to Sunday
+            day_index = 6
     return shift, day_index
 
-def read_current_shift():
-    shift, day = get_current_shift_and_day()
+# This function reads the current shift data from the PLC and returns it as a dictionary.
+def read_current_shift(shift, day):
+    #shift, day = get_current_shift_and_day()
     data = {
                 'ShiftIndex': shift,
                 'DayIndex': day,
@@ -101,9 +122,9 @@ def read_current_shift():
                 else:
                     print(f"Failed to read tag {tag_name}: {result.error if result else 'Unknown Error'} from PLC.")
     except Exception as e:
-        print(f"Error reading ShiftData from PLC: {e}")
+        print(f"Error reading ShiftData from PLC for shift {shift}, day {day}: {e}")
     return data
-    
+
 def insert_shift_record(row):
     if not row:
         print("No data to insert.")
@@ -118,7 +139,7 @@ def insert_shift_record(row):
 
         placeholders = ', '.join(['%s'] * len(values))
         columns_str = ', '.join(columns)
-
+        
         sql = f"INSERT INTO ProductionShiftData ({columns_str}) VALUES ({placeholders})"
         cursor.execute(sql, values)
 
@@ -128,7 +149,7 @@ def insert_shift_record(row):
 
         print("Shift data inserted successfully.")
     except Exception as e:
-        print(f"Error inserting data into database: {e}")
+        print(f"Error inserting shift data into database: {e}")
 
 def insert_text_logs(log_entries):
     if not log_entries:
@@ -152,12 +173,14 @@ def insert_text_logs(log_entries):
 
         print("Shift logs inserted successfully.")
     except Exception as e:
-        print(f"Error inserting logs into database: {e}")
+        print(f"Error inserting log entries into database: {e}")
 
+# This is the main entry point of the script. It reads the current shift data and text logs, then inserts them into the PostgreSQL database.
 if __name__ == "__main__":
     shift, day = get_current_shift_and_day()
-
-    shift_data = read_current_shift()
+    #shift = 0  # Example shift index, replace with actual logic to determine current shift
+    #day = 0    # Example day index, replace with actual logic to determine current day
+    shift_data = read_current_shift(shift, day)
     if shift_data:
         insert_shift_record(shift_data)
     else:
