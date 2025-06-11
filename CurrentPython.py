@@ -39,8 +39,13 @@ tags_to_read = {
     'ShiftTStamp':'ShiftTimeStamp'
 } # This is a dictionary that maps PLC tags to database fields. Each key is a tag name in the PLC, and each value is the corresponding field name in the PostgreSQL database.
 
-#DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] # List of days based on 0 = Monday, 6 = Sunday
+DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] # List of days based on 0 = Monday, 6 = Sunday
 # I eventually want to use this to get the day names, but for now I will just use the day index.
+
+#import logging
+# Set up logging
+#logging.basicConfig(filename = 'shift_data.log', level = logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s')
+# This script sets up logging to a file named 'shift_data.log' with a specific format that includes the timestamp, log level, and message.
 
 # This function reads the shift text logs
 def read_text_logs(shift, day):
@@ -53,6 +58,7 @@ def read_text_logs(shift, day):
                 shift_time = shift_time_result.value
             else:
                 shift_time = None
+                #logging.error(f"Failed to read shift time tag {shift_time_tag}: {shift_time_result.error if shift_time_result else 'Unknown Error'}")
                 print(f"Failed to read tag {shift_time_tag}: {shift_time_result.error if shift_time_result else 'Unknown Error'}")
             
             for i in range(30):
@@ -80,6 +86,7 @@ def read_text_logs(shift, day):
                         'ShiftTimeStamp': shift_time
                     })
     except Exception as e:
+        #logging.error(f"Error reading ShiftData_Logs from PLC for shift {shift}, day {day}: {e}")
         print(f"Error reading ShiftData_Logs from PLC for shift {shift}, day {day}: {e}")
     return log_entries
 
@@ -119,14 +126,21 @@ def read_current_shift(shift, day):
                 result = plc.read(tag_name)
                 if result and result.value is not None:
                     data[db_field] = result.value
+
+                    if db_field == 'ShiftOperator' and str(result.value) == "":
+                        #logging.warning(f"Operator field is empty for shift: {shift}, day: {DAY_NAMES[day]}. Please check the PLC configuration.")
+                        print(f"Operator field is empty for shift {shift}, day {day}. Please check the PLC configuration.")
                 else:
+                    #logging.error(f"Failed to read tag {tag_name}: {result.error if result else 'Unknown Error'} from PLC.")
                     print(f"Failed to read tag {tag_name}: {result.error if result else 'Unknown Error'} from PLC.")
     except Exception as e:
+        #logging.error(f"Error reading ShiftData from PLC for shift {shift}, day {day}: {e}")
         print(f"Error reading ShiftData from PLC for shift {shift}, day {day}: {e}")
     return data
 
 def insert_shift_record(row):
     if not row:
+        #logging.warning("No data to insert into the database.")
         print("No data to insert.")
         return
     
@@ -147,12 +161,15 @@ def insert_shift_record(row):
         cursor.close()
         conn.close()
 
+        #logging.info("Shift data inserted successfully.")
         print("Shift data inserted successfully.")
     except Exception as e:
+        #logging.error(f"Error inserting shift data into database: {e}")
         print(f"Error inserting shift data into database: {e}")
 
 def insert_text_logs(log_entries):
     if not log_entries:
+        #logging.warning("No log entries to insert into the database.")
         print("No log entries to insert.")
         return
     
@@ -171,23 +188,27 @@ def insert_text_logs(log_entries):
         cur.close()
         conn.close()
 
+        #logging.info("Shift logs inserted successfully.")
         print("Shift logs inserted successfully.")
     except Exception as e:
+        #logging.error(f"Error inserting log entries into database: {e}")
         print(f"Error inserting log entries into database: {e}")
 
 # This is the main entry point of the script. It reads the current shift data and text logs, then inserts them into the PostgreSQL database.
 if __name__ == "__main__":
     shift, day = get_current_shift_and_day()
     #shift = 0  # Example shift index, replace with actual logic to determine current shift
-    #day = 0    # Example day index, replace with actual logic to determine current day
+    #day = 1    # Example day index, replace with actual logic to determine current day
     shift_data = read_current_shift(shift, day)
     if shift_data:
         insert_shift_record(shift_data)
     else:
+        #logging.warning("No shift data was read from the PLC.")
         print("No shift data was read from the PLC.")
 
     log_data = read_text_logs(shift, day)
     if log_data:
         insert_text_logs(log_data)
     else:
+        #logging.warning("No log data was read from the PLC.")
         print("No log data was read from the PLC.")
