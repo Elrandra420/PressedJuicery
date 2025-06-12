@@ -52,7 +52,6 @@ tags_to_read_CycleData = {
 } # This dictionary maps additional PLC tags related to cycle data to their corresponding database fields.
 
 DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] # List of days based on 0 = Monday, 6 = Sunday
-# I eventually want to use this to get the day names, but for now I will just use the day index.
 
 # This function determines the current shift and day index based on the current time. For use with scheduled tasks.
 # Set to save the previous shifts data
