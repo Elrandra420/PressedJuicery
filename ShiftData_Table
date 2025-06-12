@@ -1,4 +1,3 @@
--- Drops the table if it exists to ensure a clean slate for table creation
 DROP TABLE IF EXISTS ProductionShiftData;
 -- This table stores shift data for production analysis
 CREATE TABLE ProductionShiftData(
@@ -18,17 +17,13 @@ CREATE TABLE ProductionShiftData(
     ShiftTotalPassed INT, --Total cycles passed
     ShiftTotalFailed INT, --Total cycles failed
     ShiftBottleTotal INT, -- Total bottles produced
-    ShiftBottlesPerCycle NUMERIC, -- Bottles per cycle average
+    ShiftBottlesPerCycle NUMERIC(20,2), -- Bottles per cycle average
     ShiftCycleTimeAvg NUMERIC, -- Average cycle time in minutes
     ShiftTenOz INT, -- 10 oz bottles produced
     ShiftFifteenOz INT, -- 15 oz bottles produced
     ShiftFiftyOneOz INT, -- 51 oz bottles produced
     ShiftDownedCount INT, -- Total bottles downed
-    ShiftTimeStamp TIMESTAMP, -- Shift timestamp
-    --ShiftID INT, -- Shift ID
+    ShiftTimeStamp VARCHAR(10), -- Shift timestamp
 
-    CONSTRAINT unique_shift_entry UNIQUE (ShiftIndex, DayIndex, ShiftTimeStamp)
+    CONSTRAINT unique_shift_entry UNIQUE (ShiftIndex, DayIndex, DateRecorded) -- Ensure unique entries for each shift on a given day
 );
-
---CREATE INDEX idx_day_shift ON ProductionShiftData (DayIndex, ShiftIndex);
---CREATE INDEX idx_timestamp ON ProductionShiftData (ShiftTimeStamp);

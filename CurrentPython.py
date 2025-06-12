@@ -17,6 +17,7 @@ DB_PARAMS = {
     'port': '5432'
 } # This dictionary holds the connection parameters for the PostgreSQL database.
 
+# This dictionary contains the Tags to read from the PLC : ShiftData[shift, day].tag_name
 # Tags to read: 'tag_name':'database_name'
 tags_to_read = {
     'DT_Min':'ShiftDowntimeMinutes',
@@ -38,6 +39,12 @@ tags_to_read = {
     'Operator':'ShiftOperator',
     'ShiftTStamp':'ShiftTimeStamp'
 } # This is a dictionary that maps PLC tags to database fields. Each key is a tag name in the PLC, and each value is the corresponding field name in the PostgreSQL database.
+
+tags_to_read_CycleData = {
+    'CycleNum':'ShiftCycleCount',
+    'BottleCount':'ShiftBottleCount',
+    'BottleWeight':'ShiftBottle'
+}
 
 DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] # List of days based on 0 = Monday, 6 = Sunday
 # I eventually want to use this to get the day names, but for now I will just use the day index.
@@ -198,7 +205,7 @@ def insert_text_logs(log_entries):
 if __name__ == "__main__":
     shift, day = get_current_shift_and_day()
     #shift = 0  # Example shift index, replace with actual logic to determine current shift
-    #day = 1    # Example day index, replace with actual logic to determine current day
+    #day = 2    # Example day index, replace with actual logic to determine current day
     shift_data = read_current_shift(shift, day)
     if shift_data:
         insert_shift_record(shift_data)
