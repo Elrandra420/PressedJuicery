@@ -3,11 +3,11 @@ DROP TABLE IF EXISTS ShiftTextLogs;
 CREATE TABLE ShiftTextLogs (
     id SERIAL PRIMARY KEY, -- Unique identifier for each record
     DateRecorded TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Timestamp when the record was created
-    ShiftDataId INT REFERENCES ProductionShiftData(id) ON DELETE CASCADE, -- Foreign key to ProductionShiftData table
+    ShiftDataID INT REFERENCES ProductionShiftData(id) ON DELETE CASCADE, -- Foreign key to ProductionShiftData table
 
     LogType VARCHAR(20) NOT NULL, -- 'maintenance' or 'process'
     EntryIndex INT NOT NULL, -- Index of the log entry
     LogText TEXT, -- Text entry for the log
-    LogTStamp VARCHAR(20), -- Timestamp for the log entry in 'YYYY-MM-DD HH:MM:SS' format
-    LogTime NUMERIC -- Time spent down in minutes
+    LogTime NUMERIC(8,2), -- Time spent down in minutes
+    LogTStamp VARCHAR(20) -- Timestamp for the log entry in 'YYYY-MM-DD HH:MM:SS' format
 );

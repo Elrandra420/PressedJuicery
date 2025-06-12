@@ -6,19 +6,20 @@ CREATE TABLE ProductionShiftData(
     ShiftIndex INT NOT NULL, -- Shift index for the production data
     DayIndex INT NOT NULL, -- Day index for the shift
 
+    ShiftDay VARCHAR(10) NOT NULL, -- Day of the week for the shift (e.g., 'Monday', 'Tuesday')
     ShiftStart VARCHAR(20), -- Shift start time
     ShiftEnd VARCHAR(20), -- Shift end time
     ShiftOperator VARCHAR(12), -- Operator for the shift
-    ShiftDowntimeMinutes NUMERIC, -- Shift Downtime in minutes
-    ShiftDowntimePercentage NUMERIC, --Shift Downtime percentage
-    ShiftRuntimeTotalMinutes NUMERIC, --Shift Runtime in minutes
-    ShiftRuntimeAvg NUMERIC, --Shift Runtime minutes
+    ShiftDowntimeMinutes NUMERIC(8,2), -- Shift Downtime in minutes
+    ShiftDowntimePercentage NUMERIC(8,2), --Shift Downtime percentage
+    ShiftRuntimeTotalMinutes NUMERIC(8,2), --Shift Runtime in minutes
+    ShiftRuntimeAvg NUMERIC(8,2), --Shift Runtime minutes
     ShiftTotalCycles INT, --Total cycles ran
     ShiftTotalPassed INT, --Total cycles passed
     ShiftTotalFailed INT, --Total cycles failed
     ShiftBottleTotal INT, -- Total bottles produced
-    ShiftBottlesPerCycle NUMERIC(20,2), -- Bottles per cycle average
-    ShiftCycleTimeAvg NUMERIC, -- Average cycle time in minutes
+    ShiftBottlesPerCycle NUMERIC(8,2), -- Bottles per cycle average
+    ShiftCycleTimeAvg NUMERIC(4,2), -- Average cycle time in minutes
     ShiftTenOz INT, -- 10 oz bottles produced
     ShiftFifteenOz INT, -- 15 oz bottles produced
     ShiftFiftyOneOz INT, -- 51 oz bottles produced

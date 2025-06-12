@@ -1,4 +1,4 @@
-DROP TABLE ProductionCycleData IF EXISTS ProductionCycleData;
+DROP TABLE IF EXISTS ProductionCycleData;
 -- This table stores shift cycle data for production analysis
 CREATE TABLE ProductionCycleData (
     id SERIAL PRIMARY KEY, -- Unique identifier for each record
@@ -6,12 +6,12 @@ CREATE TABLE ProductionCycleData (
     ShiftDataId INT REFERENCES ProductionShiftData(id) ON DELETE CASCADE, -- Foreign key to ProductionShiftData table
 
     CycleIndex INT NOT NULL, -- Index of the cycle entry
-    CycleNum Int, -- Cycle number for the production cycle
+    CycleNumber Int, -- Cycle number for the production cycle
     CycleTime NUMERIC, -- Cycle time in minutes
-    CycleStatus BOOLEAN, -- Status of the cycle ('passed', 'failed', etc.)
+    CycleStatus VARCHAR(10), -- Status of the cycle ('passed', 'failed', etc.)
     Shot INT, -- Shot number for the cycle
     SKU1 INT, -- SKU for the first product
     SKU2 INT, -- SKU for the second product
-    SKU1_Tot INT, -- Number of bottles produced in this cycle
-    SKU2_Tot INT -- Number of bottles produced in this cycle
+    SKU1_Total INT, -- Number of bottles produced in this cycle
+    SKU2_Total INT -- Number of bottles produced in this cycle
 );
