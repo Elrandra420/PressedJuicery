@@ -59,7 +59,7 @@ def get_current_shift_and_day():
     now = datetime.now()
     if now.hour >= 18 and now.hour < 6:  # Night shift from 6pm to 6am
         shift = 0
-        if now.hour < 12:
+        if now.hour < 24:
             day_index = now.weekday()  # 0 = Monday, 6 = Sunday
         else:
             day_index = now.weekday() - 1
